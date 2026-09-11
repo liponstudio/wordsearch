@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Search: Puzzle Game — Find every word. Feed your streak.</title>
+<meta name="description" content="A premium word search for Android. 15 categories, Classic & Time modes, 8 word directions, daily streaks and coins — every puzzle 100% solvable. Free on Google Play.">
+<meta property="og:title" content="Word Search: Puzzle Game">
+<meta property="og:description" content="Premium word search puzzles for Android — 15 categories, daily streaks, 100% solvable.">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --bg:#ECE4D8; --card:#FBF8F2; --border:#E1D7C6; --text:#2A241C; --muted:#8A7F6E;
+    --blue:#2F6FED; --deep:#1E4FBF; --gold:#A87B12; --success:#1F8A54; --danger:#C0392B; --hint:#C98A2B;
+  }
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.65 "Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif}
+  a{color:var(--blue);text-decoration:none}
+
+  /* ---- top bar ---- */
+  .nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+    padding:12px 24px;background:rgba(236,228,216,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .emblem{width:40px;height:40px;border-radius:12px;position:relative;overflow:hidden;flex:none;
+    background:linear-gradient(140deg,#163C96,var(--deep) 55%,var(--blue));box-shadow:0 4px 14px rgba(30,79,191,.35)}
+  .emblem span{position:absolute;font-weight:900;color:#fff;font-size:13px;line-height:1}
+  .emblem .c{top:6px;left:8px;transform:rotate(-16deg)} .emblem .a{top:14px;left:15px} .emblem .t{top:22px;right:8px;transform:rotate(10deg)}
+  .wordmark{font-size:18px;font-weight:900;letter-spacing:.2px} .wordmark b{color:var(--blue)}
+  .nav .push{flex:1}
+  .btn{display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:10px 20px;font-weight:800;
+    background:linear-gradient(90deg,var(--blue),var(--deep));color:#fff;border:none;font-size:14.5px;cursor:pointer;
+    box-shadow:0 6px 18px rgba(30,79,191,.35);transition:transform .15s, box-shadow .15s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 9px 22px rgba(30,79,191,.45)}
+  .btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--border);box-shadow:none}
+
+  /* ---- hero ---- */
+  .hero{max-width:1180px;margin:0 auto;padding:74px 24px 20px;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .kicker{display:inline-flex;align-items:center;gap:8px;background:rgba(47,111,237,.1);border:1px solid rgba(47,111,237,.3);
+    color:var(--deep);border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+  h1{font-size:clamp(34px,5vw,52px);line-height:1.08;margin:18px 0 14px;letter-spacing:-.5px}
+  h1 .ink{color:var(--blue)}
+  .lede{font-size:18px;color:var(--muted);max-width:520px;margin:0 0 26px}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .play-badge{display:inline-flex;align-items:center;gap:11px;background:#111;color:#fff;border-radius:14px;
+    padding:10px 20px 10px 16px;transition:transform .15s}
+  .play-badge:hover{transform:translateY(-1px)}
+  .play-badge svg{flex:none}
+  .play-badge small{display:block;font-size:10px;letter-spacing:1px;opacity:.75;text-transform:uppercase}
+  .play-badge strong{display:block;font-size:16.5px;letter-spacing:.2px}
+  .fine{font-size:13px;color:var(--muted)}
+  .stats{display:flex;gap:26px;margin-top:34px;flex-wrap:wrap}
+  .stat b{display:block;font-size:24px;color:var(--deep)} .stat span{font-size:12.5px;color:var(--muted);font-weight:600}
+
+  /* ---- phone mockups ---- */
+  .phones{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:0;min-height:520px}
+  .phone{width:246px;border-radius:36px;background:#141019;padding:10px;box-shadow:0 30px 60px rgba(42,36,28,.35)}
+  .phone.tilt-l{transform:rotate(-7deg) translateY(14px);z-index:1}
+  .phone.tilt-r{transform:rotate(6deg);position:absolute;right:0;top:24px;z-index:2}
+  .screen{background:var(--bg);border-radius:27px;overflow:hidden;height:470px;position:relative;padding:16px 12px}
+  .scr-head{text-align:center;margin-bottom:8px}
+  .scr-emblem{width:54px;height:54px;border-radius:15px;margin:10px auto 8px;position:relative;overflow:hidden;
+    background:linear-gradient(140deg,#163C96,var(--deep) 55%,var(--blue))}
+  .scr-emblem span{position:absolute;color:#fff;font-weight:900;font-size:16px}
+  .scr-emblem .c{top:7px;left:11px;transform:rotate(-16deg)} .scr-emblem .a{top:18px;left:20px} .scr-emblem .t{top:30px;right:11px;transform:rotate(10deg)}
+  .scr-title{font-size:17px;font-weight:900} .scr-title i{color:var(--blue);font-style:normal}
+  .scr-sub{font-size:10px;color:var(--muted)}
+  .chips{display:flex;gap:6px;justify-content:center;margin:8px 0}
+  .chip{background:var(--card);border:1px solid var(--border);border-radius:999px;font-size:9.5px;font-weight:700;padding:3px 8px}
+  .chip em{font-style:normal;color:var(--gold)}
+  .orb{width:118px;height:118px;margin:14px auto 8px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;background:linear-gradient(140deg,var(--blue),var(--deep));box-shadow:0 12px 28px rgba(30,79,191,.45)}
+  .orb b{font-size:21px;letter-spacing:1px} .orb span{font-size:9px;opacity:.85;letter-spacing:1.4px;text-transform:uppercase}
+  .resume{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 10px;margin-top:10px}
+  .resume .t{font-size:9.5px;font-weight:800;color:var(--muted);letter-spacing:1.6px}
+  .resume .n{font-size:11.5px;font-weight:900;margin-top:1px}
+  .resume .m{font-size:9px;color:var(--muted)}
+
+  .g-head{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:800;margin-bottom:6px}
+  .g-head .t{text-align:center;font-weight:900;font-size:11px} .g-head .r{color:var(--muted);font-weight:700}
+  .grid8{display:grid;grid-template-columns:repeat(8,1fr);gap:2.5px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:5px}
+  .grid8 i{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:10.5px;color:var(--text);border-radius:3.5px}
+  .grid8 i.f{background:rgba(47,111,237,.14);color:var(--deep)}
+  .grid8 i.s{background:rgba(47,111,237,.3);color:var(--blue);border:1px solid var(--blue)}
+  .gchips{display:flex;flex-wrap:wrap;gap:3.5px;margin-top:8px}
+  .gchips i{font-style:normal;font-size:8.5px;font-weight:800;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:2px 5.5px}
+  .gchips i.f{text-decoration:line-through;color:var(--muted);background:transparent;border-color:transparent}
+
+  /* ---- sections ---- */
+  section{max-width:1180px;margin:0 auto;padding:64px 24px}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 40px}
+  h2{font-size:clamp(26px,3.6vw,34px);margin:0 0 10px;letter-spacing:-.3px}
+  .sec-head p{color:var(--muted);margin:0;font-size:17px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .f-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;
+    box-shadow:0 6px 20px rgba(60,45,20,.06);transition:transform .18s}
+  .f-card:hover{transform:translateY(-4px)}
+  .f-ico{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;
+    background:rgba(47,111,237,.12);margin-bottom:14px}
+  .f-card h3{margin:0 0 6px;font-size:17px} .f-card p{margin:0;color:var(--muted);font-size:14.5px}
+
+  /* modes */
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .mode{border-radius:22px;padding:28px;color:#fff;position:relative;overflow:hidden}
+  .mode.classic{background:linear-gradient(135deg,var(--blue),var(--deep))}
+  .mode.time{background:linear-gradient(135deg,#B4451F,#7A1F1F)}
+  .mode h3{margin:0 0 6px;font-size:22px} .mode p{margin:0 0 16px;opacity:.92}
+  .mode ul{margin:0;padding-left:20px;font-size:14.5px} .mode li{margin:5px 0}
+  .mode .tag{position:absolute;top:18px;right:-34px;transform:rotate(38deg);background:rgba(255,255,255,.16);
+    padding:4px 40px;font-size:10.5px;font-weight:900;letter-spacing:1.6px}
+
+  /* loop */
+  .loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .step{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;text-align:center}
+  .step b{display:block;width:34px;height:34px;line-height:34px;margin:0 auto 10px;border-radius:50%;
+    background:linear-gradient(140deg,var(--blue),var(--deep));color:#fff;font-size:15px}
+  .step h3{margin:0 0 4px;font-size:15.5px} .step p{margin:0;font-size:13px;color:var(--muted)}
+
+  /* faq */
+  details{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:12px}
+  summary{cursor:pointer;font-weight:800;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";font-size:22px;color:var(--blue);font-weight:900;transition:transform .2s}
+  details[open] summary::after{content:"–"}
+  details p{margin:12px 0 0;color:var(--muted);font-size:15px}
+
+  /* final cta */
+  .final{background:linear-gradient(135deg,#163C96,var(--deep) 50%,var(--blue));border-radius:28px;color:#fff;
+    text-align:center;padding:56px 28px;margin:20px auto 70px;max-width:1180px}
+  .final h2{color:#fff} .final p{opacity:.9;max-width:520px;margin:0 auto 26px}
+  .final .btn{background:#fff;color:var(--deep);box-shadow:0 10px 26px rgba(0,0,0,.25)}
+
+  footer{border-top:1px solid var(--border);padding:28px 24px 40px;text-align:center;color:var(--muted);font-size:13.5px}
+  footer b{color:var(--text)}
+
+  @media (max-width:960px){
+    .hero{grid-template-columns:1fr;padding-top:48px} .phones{min-height:auto;margin-top:24px}
+    .phone.tilt-r{position:relative;right:auto;top:auto;transform:rotate(3deg)}
+    .grid,.loop{grid-template-columns:1fr 1fr} .modes{grid-template-columns:1fr}
+  }
+  @media (max-width:600px){ .grid,.loop{grid-template-columns:1fr} .phone{width:224px} }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="emblem"><span class="c">C</span><span class="a">A</span><span class="t">T</span></div>
+  <span class="wordmark">Word<b>Search</b></span>
+  <span class="push"></span>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=com.lipon.wordsearch">Get it on Google Play</a>
+</nav>
+
+<header class="hero">
+  <div>
+    <span class="kicker">🔥 Daily streak · 🪙 Earn coins · ⚡ 100% solvable</span>
+    <h1>Find every word.<br><span class="ink">Feed your streak.</span></h1>
+    <p class="lede">A premium word search built for quick daily sessions — 15 hand-picked categories,
+      two game modes, and puzzles that stay clever from the very first grid.</p>
+    <div class="cta-row">
+      <a class="play-badge" href="https://play.google.com/store/apps/details?id=com.lipon.wordsearch">
+        <svg width="26" height="28" viewBox="0 0 512 512" fill="none"><path d="M48 24v464c0 6 4 10 9 8l394-232c5-3 5-11 0-14L57 16c-5-2-9 2-9 8z" fill="#2F6FED"/><path d="M48 24l353 256-84 78L48 24z" fill="#34A853" opacity=".9"/><path d="M48 488l269-130 84 78L48 488z" fill="#EA4335" opacity=".85"/><path d="M401 256l47-27c6-4 6-12 0-16l-47-27-84 43 84 27z" fill="#FBBC04"/></svg>
+        <span><small>Get it on</small><strong>Google Play</strong></span>
+      </a>
+      <span class="fine">Free to play · Android · No account needed</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>15</b><span>Categories</span></div>
+      <div class="stat"><b>2</b><span>Game modes</span></div>
+      <div class="stat"><b>8</b><span>Word directions</span></div>
+      <div class="stat"><b>100%</b><span>Always solvable</span></div>
+    </div>
+  </div>
+
+  <div class="phones" aria-hidden="true">
+    <div class="phone tilt-l">
+      <div class="screen">
+        <div class="scr-head">
+          <div class="scr-emblem"><span class="c">C</span><span class="a">A</span><span class="t">T</span></div>
+          <div class="scr-title">Word<i>Search</i></div>
+          <div class="scr-sub">Puzzle Game</div>
+        </div>
+        <div class="chips"><span class="chip">🪙 <em>300+</em></span><span class="chip">🎯 <em>3</em>/15</span><span class="chip">🔥 <em>4</em> days</span></div>
+        <div class="orb"><b>▶ PLAY</b><span>Fresh puzzle</span></div>
+        <div class="resume">
+          <div class="t">RESUME GAME</div>
+          <div class="n">🐾 Animals · Classic</div>
+          <div class="m">8 words found · score 80</div>
+        </div>
+        <div class="scr-sub" style="margin-top:12px">Drag across letters to find the hidden words</div>
+      </div>
+    </div>
+    <div class="phone tilt-r">
+      <div class="screen">
+        <div class="g-head">
+          <span class="chip"><em>120</em> SCORE</span>
+          <span class="t">🐾 Animals</span>
+          <span class="r chip">⏱ 1:12</span>
+        </div>
+        <div class="grid8">
+          <i>S</i><i>N</i><i>A</i><i>K</i><i>E</i><i>P</i><i>T</i><i>O</i>
+          <i>Q</i><i class="f">H</i><i class="f">O</i><i class="f">R</i><i class="f">S</i><i>E</i><i>X</i><i>M</i>
+          <i>U</i><i>W</i><i>B</i><i class="s">L</i><i class="s">I</i><i class="s">O</i><i>N</i><i>Y</i>
+          <i>D</i><i>Z</i><i>O</i><i>W</i><i>L</i><i>F</i><i class="f">A</i><i>L</i>
+          <i>C</i><i>K</i><i>U</i><i>T</i><i>T</i><i>Y</i><i class="f">R</i><i>Q</i>
+          <i>G</i><i>M</i><i>O</i><i>W</i><i>S</i><i>K</i><i>I</i><i>N</i>
+          <i>N</i><i>E</i><i>W</i><i>B</i><i>O</i><i>T</i><i>P</i><i class="f">S</i>
+          <i>H</i><i>O</i><i>R</i><i>S</i><i>E</i><i>Z</i><i>V</i><i>A</i>
+        </div>
+        <div class="gchips">
+          <i class="f">HORSE</i><i class="f">SNAKE</i><i class="f">EAGLE</i><i class="f">FROG</i>
+          <i>LION</i><i>WOLF</i><i class="f">SHARK</i><i>MOUSE</i>
+        </div>
+        <div class="chips" style="margin-top:10px"><span class="chip">💡 Hints: <em>2</em></span><span class="chip">🪙 +2 per word</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>Why players stay</h2>
+    <p>Not another word maze. Every detail earns its place.</p>
+  </div>
+  <div class="grid">
+    <div class="f-card"><div class="f-ico">🧩</div><h3>Guaranteed solvable</h3><p>Every listed word is verified present and traceable in both directions — before the grid ever reaches your eyes.</p></div>
+    <div class="f-card"><div class="f-ico">🧠</div><h3>Gets smarter</h3><p>Early levels read naturally; later grids twist through all 8 directions with dense word entanglement.</p></div>
+    <div class="f-card"><div class="f-ico">🗂️</div><h3>15 themed levels</h3><p>Animals, Food, Sports, Colors, Nature, Body, Jobs, Travel, Music, School, Family, Clothes, Time, Home and Tech — each with its own unique words.</p></div>
+    <div class="f-card"><div class="f-ico">✨</div><h3>Bonus words</h3><p>Real words hiding off-script. Spot them for extra points, coins and the occasional “on fire!” moment.</p></div>
+    <div class="f-card"><div class="f-ico">💡</div><h3>Hints that help</h3><p>Three per puzzle, plus a rewarded hint when you're really stuck — never a dead end.</p></div>
+    <div class="f-card"><div class="f-ico">🔌</div><h3>Offline &amp; private</h3><p>No accounts, no cloud, no tracking by us. Your progress lives on your phone.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Two ways to play</h2>
+    <p>Pick your pace — your last mode is remembered.</p>
+  </div>
+  <div class="modes">
+    <div class="mode classic"><span class="tag">ZEN</span>
+      <h3>🐢 Classic</h3>
+      <p>Find all the words at your own pace. The clock counts up.</p>
+      <ul><li>+10 per puzzle word · +5 per bonus word</li><li>Perfect for commutes and calm focus</li><li>No pressure, pure puzzle</li></ul>
+    </div>
+    <div class="mode time"><span class="tag">RUSH</span>
+      <h3>⚡ Time · 2:00</h3>
+      <p>Race the clock. Under 30 seconds it turns red.</p>
+      <ul><li>Same words — double the adrenaline</li><li>Finish with time left? 2× bonus points per second</li><li>Beat your best, earn a third star</li></ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>The daily loop</h2>
+    <p>Small, satisfying, honest.</p>
+  </div>
+  <div class="loop">
+    <div class="step"><b>1</b><h3>Play a level</h3><p>Unique board every round — never the same puzzle twice.</p></div>
+    <div class="step"><b>2</b><h3>Collect coins</h3><p>Coins per word while you play, plus a 50-coin bonus after the level ad.</p></div>
+    <div class="step"><b>3</b><h3>Unlock next</h3><p>Finish a category and the next one opens automatically.</p></div>
+    <div class="step"><b>4</b><h3>Keep the streak</h3><p>One finished day keeps 🔥 alive. Miss one, it resets — come back tomorrow.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Questions, answered</h2>
+  </div>
+  <details><summary>Is it really free?</summary><p>Yes. Free to download and play, forever. Ads appear as an optional extra hint and a short full-screen ad after each finished level — that's how a small indie studio keeps the lights on.</p></details>
+  <details><summary>Can I play without internet?</summary><p>The puzzles themselves are fully offline. You only need a connection for the optional rewarded hint and the after-level ad; if no ad is available, you still get the coin bonus.</p></details>
+  <details><summary>Will the words ever be impossible?</summary><p>No. Every generated board is validated before it's shown — every word in the list can be found, forwards or backwards, along a straight line. It's proven in code, not promised in marketing.</p></details>
+  <details><summary>Do you collect my data?</summary><p>We collect nothing. Progress is saved only on your device. Google AdMob may use standard device advertising identifiers to serve ads — see the <a href="https://YOUR-GITHUB-USERNAME.github.io/wordsearch-privacy/" rel="noopener">privacy policy</a>.</p></details>
+  <details><summary>Which devices are supported?</summary><p>Android phones and tablets (5.0+). Portrait-first, tuned for one-thumb play.</p></details>
+</section>
+
+<div class="final">
+  <h2>Your next streak starts today</h2>
+  <p>15 categories. Two modes. One grid standing between you and a perfect run.</p>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=com.lipon.wordsearch">▶ Get Word Search — Free</a>
+</div>
+
+<footer>
+  <b>WordSearch: Puzzle Game</b> · by Lipon Studio<br>
+  <a href="https://YOUR-GITHUB-USERNAME.github.io/wordsearch-privacy/" rel="noopener">Privacy Policy</a> · Android is a trademark of Google LLC · © 2026 Lipon Studio
+</footer>
+
+</body>
+</html>
